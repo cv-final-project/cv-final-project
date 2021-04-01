@@ -1,0 +1,2 @@
+Correctly worn mask (Positive): Nose + Mouth OR Nose + Mouth + Chin
+Incorrectly worn mask (Negative): Other
