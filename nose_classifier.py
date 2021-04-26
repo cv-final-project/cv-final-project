@@ -21,7 +21,7 @@ class_d = {
     'no_nose':['mouth_nose/','mouth_nose_chin/']
 }
 ########
-#os.mkdir('org_data')
+os.mkdir('org_data')
 for class_ in class_d:
   class_d[class_] = ['data/train/'+x for x in class_d[class_]]
   if not os.path.isdir('org_data/'+class_):
@@ -148,7 +148,6 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate,
 ##############################################################################
 
 # Code to train the neural net
-%%time
 def train(model, trainloader, valloader, num_epoch = 10): # Train the model
   print("Start training...")
   trn_loss_hist = []
@@ -159,8 +158,6 @@ def train(model, trainloader, valloader, num_epoch = 10): # Train the model
     running_loss = []
     print('-----------------Epoch = %d-----------------' % (i+1))
     for batch, label in tqdm(trainloader):
-      batch = batch.to(device)
-      label = label.to(device)
       optimizer.zero_grad() # Clear gradients from the previous iteration
       pred = model(batch) # This will call Network.forward() that you implement
       loss = criterion(pred, label) # Calculate the loss
@@ -182,22 +179,20 @@ def evaluate(model, loader): # Evaluate accuracy on validation / test set
   correct = 0
   with torch.no_grad(): # Do not calculate grident to speed up computation
     for batch, label in tqdm(loader):
-      batch = batch.to(device)
-      label = label.to(device)
       pred = model(batch)
       correct += (torch.argmax(pred,dim=1)==label).sum().item()
     acc = correct/len(loader.dataset)
     print("\n Evaluation accuracy: {}".format(acc))
     return acc
     
-trn_loss_hist, trn_acc_hist, val_acc_hist = train(model, trainloader, 
-                                                  valloader, num_epoch)
+trn_loss_hist, trn_acc_hist, val_acc_hist = train(model, train_loader, 
+                                                  val_loader, num_epoch)
 
 ##############################################################################
 # TODO: Note down the evaluation accuracy on test set                        #
 ##############################################################################
-print("\n Evaluate on test set")
-evaluate(model, testloader);
+#print("\n Evaluate on test set")
+#evaluate(model, test_loader);
 
 ##############################################################################
 # TODO: Submit the accuracy plot                                             #
@@ -214,4 +209,4 @@ plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.title('fashion MNIST Classification')
 plt.gcf().set_size_inches(10, 5)
-plt.show()
+plt.savefig("nose_classifier_performace.png")
