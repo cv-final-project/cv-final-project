@@ -17,7 +17,7 @@ from torch.utils.data.sampler import WeightedRandomSampler
 
 ########
 class_d = {
-    'mask': ['chin/', 'mouth_chin/'],    # ['chin/', 'mouth_chin/', 'mouth_nose/', 'mouth_nose_chin/'],
+    'mask': ['mask'],    # ['chin/', 'mouth_chin/', 'mouth_nose/', 'mouth_nose_chin/'],
     'no_mask': ['no_mask/']
 }
 ########
@@ -31,23 +31,35 @@ print(os.getcwd())
 class_d_train = {}
 class_d_test = {}
 
+train_limit = 5000      # 1000
+test_limit = 1000        # 200
+
 for class_ in class_d:
-    class_d_train[class_] = ['data/train/' + x for x in class_d[class_]]
+    class_d_train[class_] = ['data/small/' + x + '/train/' for x in class_d[class_]]
     if not os.path.isdir('org_train/' + class_):
         os.makedirs('org_train/' + class_)
     for folder_ in class_d_train[class_]:
         folder = os.listdir(folder_)
-        for file in folder:
-            shutil.copy2(folder_ + file, 'org_train/' + class_)
 
-    class_d_test[class_] = ['data/test/' + x for x in class_d[class_]]
+        count = 0
+        for file in folder:
+            if count < train_limit:
+                shutil.copy2(folder_ + file, 'org_train/' + class_)
+            count += 1
+        print("total train: " + str(count))
+
+    class_d_test[class_] = ['data/small/' + x + '/test/' for x in class_d[class_]]
     if not os.path.isdir('org_test/' + class_):
         os.makedirs('org_test/' + class_)
     for folder_ in class_d_test[class_]:
         folder = os.listdir(folder_)
-        for file in folder:
-            shutil.copy2(folder_ + file, 'org_test/' + class_)
 
+        count = 0
+        for file in folder:
+            if count < test_limit:
+                shutil.copy2(folder_ + file, 'org_test/' + class_)
+            count += 1
+        print("total train: " + str(count))
 len(os.listdir('org_train/no_mask')), len(os.listdir('org_train/mask'))
 
 
@@ -93,7 +105,7 @@ def load_data_balanced(classes, BATCH_SIZE):
 
 
 ###########HYPERPARAMETERS###########
-BATCH_SIZE = 8
+BATCH_SIZE = 64     # 8
 #####################################
 train_loader, val_loader, test_loader = load_data_balanced(class_d.keys(), BATCH_SIZE)
 
@@ -112,6 +124,7 @@ class Network(nn.Module):
         # Some common choices: Linear, Conv2d, ReLU, MaxPool2d, AvgPool2d, Dropout   #
         # If you have many layers, use nn.Sequential() to simplify your code         #
         ##############################################################################
+
         self.in_dim = 1
         self.mid_layer_params = 32
         self.num_classes = 2
@@ -139,6 +152,14 @@ class Network(nn.Module):
             nn.Linear(self.mid_layer_params * 10 ** 2, self.num_classes)
         )
 
+        # self.conv1 = nn.Conv2d(1, 5, kernel_size=8)
+        # self.conv2 = nn.Conv2d(5, 2, kernel_size=3)
+        #
+        # self.fc1 = nn.Linear(968, 2)
+        # # self.fc2 = nn.Linear(32, 2)
+        #
+        # self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+
         ##############################################################################
         #                             END OF YOUR CODE                               #
         ##############################################################################
@@ -147,11 +168,21 @@ class Network(nn.Module):
         ##############################################################################
         # TODO: Design your own network, implement forward pass here                 #
         ##############################################################################
+
         x = self.cnn_layers_max(x)
         x = self.cnn_layers_avg(x)
         x = self.cnn_layers_max_2(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
+
+        # x = F.relu(self.pool(self.conv1(x)))
+        # x = F.relu(self.pool(self.conv2(x)))
+        #
+        # x = x.view(x.size(0), -1)
+        #
+        # x = F.relu(self.fc1(x))
+        # # x = F.relu(self.fc2(x))
+
         return x
         ##############################################################################
         #                             END OF YOUR CODE                               #
