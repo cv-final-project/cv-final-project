@@ -35,8 +35,8 @@ else:
 To enable GPU, please to go Edit > Notebook Settings > Hardware \
 Accelerator and select GPU.")
 
-! rm -rf sample_data/
-! git clone https://eecs442finalproject:eecs442isgreat@github.com/cv-final-project/cv-final-project.git
+# ! rm -rf sample_data/
+# ! git clone https://eecs442finalproject:eecs442isgreat@github.com/cv-final-project/cv-final-project.git
 
 def get_min_num_files(class_d, tt):
   mins = []
@@ -76,10 +76,10 @@ class_d = {
     'no_nose':['_Mask_Nose_Mouth','mask']
 }
 ########
-! rm -rf org_data/
+# ! rm -rf org_data/
 create_classes(class_d)
 
-! rm -rf cv-final-project/
+# ! rm -rf cv-final-project/
 
 ###########HYPERPARAMETERS###########
 BATCH_SIZE = 64
