@@ -3,15 +3,23 @@ import collections
 import torch
 import cv2
 
+from model.python_files.gpunose_classifier import Nose_Network
+from model.python_files.gpumouth_classifier import Mouth_Network
+from model.python_files.gpumask_classifier import Mask_Network
+
 from torchvision.transforms import ToTensor
 
-NOSE_CLASSIFIER = ''
-MOUTH_CLASSIFIER = ''
-MASK_CLASSIFIER = ''
+NOSE_CLASSIFIER = 'model/model_archive/nose.pt'
+MOUTH_CLASSIFIER = 'model/model_archive/mouth.pt'
+MASK_CLASSIFIER = 'model/model_archive/mask.pt'
 
-nose = torch.load(NOSE_CLASSIFIER)
-mouth = torch.load(MOUTH_CLASSIFIER)
-mask = torch.load(MASK_CLASSIFIER)
+nose = Nose_Network()
+mouth = Mouth_Network()
+mask = Mask_Network()
+
+nose.load_state_dict(torch.load(NOSE_CLASSIFIER, map_location=torch.device('cpu')))
+mouth.load_state_dict(torch.load(MOUTH_CLASSIFIER, map_location=torch.device('cpu')))
+mask.load_state_dict(torch.load(MASK_CLASSIFIER, map_location=torch.device('cpu')))
 
 NO_MASK, INCORRECT, CORRECT = 0, 1, 2
 labels = {}
@@ -27,7 +35,7 @@ for dir in os.listdir('data/small'):
     if not os.path.isdir(f'data/small/{dir}'):
         continue
 
-    files = os.listdir('data/small/{dir}/test')
+    files = os.listdir(f'data/small/{dir}/test')
     for file in files:
         labels[file] = dir_labels[dir]
 
@@ -42,6 +50,7 @@ with torch.no_grad():
     while labels:
         file, label = labels.popitem()
         image = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
+        print(file)
         image = cv2.resize(image, (100, 100))
         image_tensor = ToTensor(image)
 
