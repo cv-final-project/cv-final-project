@@ -25,6 +25,7 @@ from torchsummary import summary
 from torchvision import datasets, transforms
 from torch.utils.data import Dataset, Subset, DataLoader, random_split
 from torch.utils.data.sampler import WeightedRandomSampler
+from PIL import Image
 
 if torch.cuda.is_available():
     print("Using the GPU. You are good to go!")
@@ -75,7 +76,7 @@ class_d = {
     'no_nose':['_Mask_Nose_Mouth','mask']
 }
 ########
-#! rm -rf org_data/
+# ! rm -rf org_data/
 create_classes(class_d)
 
 # ! rm -rf cv-final-project/
@@ -85,6 +86,7 @@ BATCH_SIZE = 64
 #####################################
 def get_loader(tt, BATCH_SIZE):
   resize = transforms.Compose([
+      transforms.Grayscale(num_output_channels=1),
       transforms.ToTensor()
   ])
   train_data = datasets.ImageFolder(f'org_data/{tt}', transform=resize)
@@ -111,7 +113,7 @@ class Nose_Network(nn.Module):
     # Some common choices: Linear, Conv2d, ReLU, MaxPool2d, AvgPool2d, Dropout   #
     # If you have many layers, use nn.Sequential() to simplify your code         #
     ##############################################################################
-    self.in_dim = 3
+    self.in_dim = 1
     self.mid_layer_params = 32
     self.num_classes = 2
     self.cnn_layers_max = nn.Sequential(
@@ -159,7 +161,7 @@ class Nose_Network(nn.Module):
 model = Nose_Network().to(device)
 criterion = nn.CrossEntropyLoss() # Specify the loss layer
 print('Your network:')
-print(summary(model, (3,256,256))) # visualize your model
+print(summary(model, (1,256,256))) # visualize your model
 
 ##############################################################################
 # TODO: Modify the lines below to experiment with different optimizers,      #
@@ -254,10 +256,10 @@ model.eval()
 img_dir = "org_data/test/no_nose/00018_Mask.jpg"
 img = Image.open(img_dir)
 display(img)
-img = transforms.ToTensor()(img).unsqueeze_(0)
+img = transforms.ToTensor()(img)#.unsqueeze_(0)
 img = img.to(device)
-
-res = model(img)
+pprint(img.shape)
+res = model(img[None,...])
 res = res.cpu()
 nns = res.detach().numpy()[0,0]
 print("no_nose score: " + str(nns))
