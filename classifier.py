@@ -2,6 +2,7 @@ import os
 import collections
 import torch
 import cv2
+import matplotlib as plt
 
 from model.python_files.gpunose_classifier import Nose_Network
 from model.python_files.gpumouth_classifier import Mouth_Network
@@ -31,17 +32,18 @@ dir_labels = {
     'no_mask': 0,
 }
 
-for dir in os.listdir('data/small'):
-    if not os.path.isdir(f'data/small/{dir}'):
+BASE_DIR = 'data/small'
+
+for dir in os.listdir(BASE_DIR):
+    if not os.path.isdir(f'{BASE_DIR}/{dir}'):
         continue
 
-    files = os.listdir(f'data/small/{dir}/test')
+    files = os.listdir(f'{BASE_DIR}/{dir}/test')
     if len(files) > 400:
         files = files[:400]
 
     for file in files:
-        labels[f'data/small/{dir}/test/{file}'] = dir_labels[dir]
-
+        labels[f'{BASE_DIR}/{dir}/test/{file}'] = dir_labels[dir]
 
 nose.eval()
 mouth.eval()
@@ -55,7 +57,7 @@ with torch.no_grad():
         image = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
         transform = ToTensor()
         image_tensor = transform(image)
-
+        
         nose_scores = nose(image_tensor[None, ...])
         mouth_scores = mouth(image_tensor[None, ...])
         mask_scores = mouth(image_tensor[None, ...])
