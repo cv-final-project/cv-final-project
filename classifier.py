@@ -36,8 +36,11 @@ for dir in os.listdir('data/small'):
         continue
 
     files = os.listdir(f'data/small/{dir}/test')
+    if len(files) > 400:
+        files = files[:400]
+
     for file in files:
-        labels[file] = dir_labels[dir]
+        labels[f'data/small/{dir}/test/{file}'] = dir_labels[dir]
 
 
 nose.eval()
@@ -50,13 +53,16 @@ with torch.no_grad():
     while labels:
         file, label = labels.popitem()
         image = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
-        print(file)
-        image = cv2.resize(image, (100, 100))
-        image_tensor = ToTensor(image)
+        transform = ToTensor()
+        image_tensor = transform(image)
 
-        nose_pred = torch.argmax(nose(image_tensor))
-        mouth_pred = torch.argmax(mouth(image_tensor))
-        mask_pred = torch.argmax(mask(image_tensor))
+        nose_scores = nose(image_tensor[None, ...])
+        mouth_scores = mouth(image_tensor[None, ...])
+        mask_scores = mouth(image_tensor[None, ...])
+
+        nose_pred = torch.argmax(nose_scores)
+        mouth_pred = torch.argmin(mouth_scores)
+        mask_pred = torch.argmax(mask_scores)
 
         pred_label = None
         if mask_pred:
@@ -70,4 +76,6 @@ with torch.no_grad():
 
         correct += int(label == pred_label)
 
-print("Accuracy: " + (correct / total))
+        print('Done with ' + file)
+
+print("Accuracy: " + str(correct / total))
