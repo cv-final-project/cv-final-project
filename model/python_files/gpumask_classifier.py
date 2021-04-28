@@ -123,7 +123,7 @@ BATCH_SIZE = 64     # 8
 #####################################
 train_loader, val_loader, test_loader = load_data_balanced(class_d.keys(), BATCH_SIZE)
 
-class Network(nn.Module):
+class Mask_Network(nn.Module):
     def __init__(self):
         super().__init__()
         ##############################################################################
@@ -184,7 +184,7 @@ class Network(nn.Module):
         #                             END OF YOUR CODE                               #
         ##############################################################################
 
-model = Network().to(device)
+model = Mask_Network().to(device)
 criterion = nn.CrossEntropyLoss()  # Specify the loss layer
 print('Your network:')
 print(summary(model, (1, 100, 100)))  # visualize your model
